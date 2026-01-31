@@ -1,0 +1,9 @@
+streamlit
+torch
+transformers
+sentencepiece
+numpy
+pandas
+plotly
+fpdf
+deep-translator
