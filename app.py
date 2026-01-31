@@ -725,7 +725,7 @@ Weighted F1-score = 0.92
         "🧠 Influential Words in Patient Narrative</p>",
         unsafe_allow_html=True
         )
-        top_words = r["words"][:6] 
+     
         highlighted = ""
         for w in r["trans"].split():
             wc = w.lower().strip(".,!?")
@@ -751,18 +751,31 @@ Weighted F1-score = 0.92
         )
 
         top_words_df = r["df"].head(5)
+        plot_df = top_words_df.copy()
+        plot_df["Score"] = plot_df["Score"].abs()
+        min_score = plot_df["Score"].min()
+        max_score = plot_df["Score"].max()
+        if max_score == 0:
+            max_score = 1e-6
+
 
         figb = px.bar(
-        top_words_df,
-        x="Score",
-        y="Word",
-        orientation="h",
-        color="Score",
-        color_continuous_scale="Reds" if r["pred"] != 0 else "Greens"
-        )
+            plot_df,
+            x="Score",
+            y="Word",
+            orientation="h",
+            color="Score",
+            color_continuous_scale=(
+                ["#fef9c3", "#f59e0b"] if r["pred"] == 1 else
+                ["#fee2e2", "#dc2626"] if r["pred"] == 2 else
+                ["#dcfce7", "#16a34a"]
+            ),
+            range_color=[min_score, max_score]
+)
+
 
         figb.update_layout(
-        height=260,
+        height=300,
         title="Top-5 Most Influential Linguistic Markers"
 )
 
