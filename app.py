@@ -470,8 +470,22 @@ if run and text.strip():
         pred = int(np.argmax(probs))
         conf = probs[pred]*100
 
-        attn = out.attentions[-1][0].mean(dim=0).mean(dim=0).cpu().numpy()
+        if out.attentions is not None:
+            attn = (
+                out.attentions[-1][0]
+                .mean(dim=0)
+                .mean(dim=0)
+                .cpu()
+                .numpy()
+                )
+        else:
+            attn = np.zeros(len(inp["input_ids"][0]))
+
         toks = tokenizer.convert_ids_to_tokens(inp["input_ids"][0])
+        if len(attn) != len(toks):
+            min_len = min(len(attn), len(toks))
+            attn = attn[:min_len]
+            toks = toks[:min_len]
 
         STOP_TOKENS = {
          ".", ",", "!", "?", ";", ":", "'", '"',
@@ -711,7 +725,7 @@ Weighted F1-score = 0.92
         "🧠 Influential Words in Patient Narrative</p>",
         unsafe_allow_html=True
         )
-
+        top_words = r["words"][:6] 
         highlighted = ""
         for w in r["trans"].split():
             wc = w.lower().strip(".,!?")
