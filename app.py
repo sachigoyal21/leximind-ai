@@ -752,43 +752,40 @@ Weighted F1-score = 0.92
 
         top_words_df = r["df"].head(5)
         plot_df = top_words_df.copy()
-        max_abs = plot_df["Score"].abs().max()
-        scale = max_abs if max_abs and not np.isnan(max_abs) else 1.0
-        plot_df["VizScore"] = plot_df["Score"] .abs()/ scale
-
-
-
+        plot_df["VizScore"] = plot_df["Score"].abs()
+        max_val = plot_df["VizScore"].max()
+        if max_val == 0 or np.isnan(max_val):
+            plot_df["VizScore"] = 0.05
+        else:
+            plot_df["VizScore"] = plot_df["VizScore"] / max_val
+            plot_df["VizScore"] = plot_df["VizScore"].clip(lower=0.05)
+        if r["pred"] == 0:      # Normal
+            color_scale = ["#dcfce7", "#16a34a"]
+        elif r["pred"] == 1:    # Anxiety
+            color_scale = ["#fef9c3", "#f59e0b"]
+        else:                   # Depression
+            color_scale = ["#fee2e2", "#dc2626"]
         figb = px.bar(
             plot_df,
             x="VizScore",
             y="Word",
             orientation="h",
             color="VizScore",
-            color_continuous_scale=(
-                ["#fef9c3", "#f59e0b"] if r["pred"] == 1 else
-                ["#fee2e2", "#dc2626"] if r["pred"] == 2 else
-                ["#dcfce7", "#16a34a"]
-            ),
-            range_color=[0,1]
-)
-
-
-        figb.update_layout(
-        height=300,
-        title="Top-5 Most Influential Linguistic Markers"
-)
-
-        figb.update_layout(height=300)
-        figb.update_layout(
-        xaxis_title="Attention Contribution",
-        yaxis_title="Token",
-        xaxis=dict(
-            tickformat=".2f",
-            showgrid=True
-    )
+            color_continuous_scale=color_scale,
          )
-
+        figb.update_traces(
+            marker_line_width=1.2,
+            marker_line_color="#1e293b"
+       )
+        figb.update_layout(
+            height=300,
+            title="Top-5 Most Influential Linguistic Markers",
+            xaxis_title="Attention Contribution (relative)",
+            yaxis_title="Token",
+            coloraxis_showscale=True
+                        )
         st.plotly_chart(figb, use_container_width=True)
+
                 
 
 
