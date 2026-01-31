@@ -752,25 +752,24 @@ Weighted F1-score = 0.92
 
         top_words_df = r["df"].head(5)
         plot_df = top_words_df.copy()
-        plot_df["Score"] = plot_df["Score"].abs()
-        min_score = plot_df["Score"].min()
-        max_score = plot_df["Score"].max()
-        if max_score == 0:
-            max_score = 1e-6
+        max_abs = plot_df["Score"].abs().max()
+        scale = max_abs if max_abs and not np.isnan(max_abs) else 1.0
+        plot_df["VizScore"] = plot_df["Score"] .abs()/ scale
+
 
 
         figb = px.bar(
             plot_df,
-            x="Score",
+            x="VizScore",
             y="Word",
             orientation="h",
-            color="Score",
+            color="VizScore",
             color_continuous_scale=(
                 ["#fef9c3", "#f59e0b"] if r["pred"] == 1 else
                 ["#fee2e2", "#dc2626"] if r["pred"] == 2 else
                 ["#dcfce7", "#16a34a"]
             ),
-            range_color=[min_score, max_score]
+            range_color=[0,1]
 )
 
 
@@ -782,7 +781,11 @@ Weighted F1-score = 0.92
         figb.update_layout(height=300)
         figb.update_layout(
         xaxis_title="Attention Contribution",
-        yaxis_title="Token"
+        yaxis_title="Token",
+        xaxis=dict(
+            tickformat=".2f",
+            showgrid=True
+    )
          )
 
         st.plotly_chart(figb, use_container_width=True)
