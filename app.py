@@ -171,7 +171,8 @@ def load_model():
     tok = BertTokenizerFast.from_pretrained(MODEL_PATH)
     mdl = BertForSequenceClassification.from_pretrained(
         MODEL_PATH,
-        use_safetensors=True
+        use_safetensors=True,
+        output_attentions=True
     )
     mdl.eval()
     return tok, mdl
@@ -470,16 +471,23 @@ if run and text.strip():
         pred = int(np.argmax(probs))
         conf = probs[pred]*100
 
-        if out.attentions is not None:
-            attn = (
-                out.attentions[-1][0]
-                .mean(dim=0)
-                .mean(dim=0)
-                .cpu()
-                .numpy()
-                )
+        if out.attentions and len(out.attentions) > 0:
+           last_attn = out.attentions[-1]
+
+           if last_attn.dim() == 4:
+               attn = (
+               last_attn[0]          # batch
+               .mean(dim=0)          # heads
+               .mean(dim=0)          # tokens
+               .detach()
+               .cpu()
+               .numpy()
+             )
+           else:
+             attn = np.zeros(len(inp["input_ids"][0]))
         else:
             attn = np.zeros(len(inp["input_ids"][0]))
+
 
         toks = tokenizer.convert_ids_to_tokens(inp["input_ids"][0])
         if len(attn) != len(toks):
