@@ -472,7 +472,7 @@ if run and text.strip():
             "Translation service is temporarily unavailable. "
             "The original text will be analyzed."
             )
-    trans = text
+            trans = text
         inp = tokenizer(trans,return_tensors="pt",padding=True,truncation=True,max_length=128).to(device)
         with torch.no_grad():
             out = model(**inp,output_attentions=True)
