@@ -463,15 +463,15 @@ with c2:
 if run and text.strip():
     with st.spinner("Analyzing linguistic biomarkers..."):
         try:
-    trans = GoogleTranslator(
-        source="auto",
-        target="en"
-    ).translate(text)
-except Exception:
-    st.warning(
-        "Translation service is temporarily unavailable. "
-        "The original text will be analyzed."
-    )
+            trans = GoogleTranslator(
+            source="auto",
+            target="en"
+            ).translate(text)
+        except Exception:
+            st.warning(
+            "Translation service is temporarily unavailable. "
+            "The original text will be analyzed."
+            )
     trans = text
         inp = tokenizer(trans,return_tensors="pt",padding=True,truncation=True,max_length=128).to(device)
         with torch.no_grad():
